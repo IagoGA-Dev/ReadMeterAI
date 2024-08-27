@@ -1,0 +1,31 @@
+{
+  "name": "readmeterai",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_PATH=./build node build/index.js",
+    "build": "tsc -p .",
+    "dev": "nodemon src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IagoGA-Dev/ReadMeterAI.git"
+  },
+  "author": "Iago Guernieri de Araújo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IagoGA-Dev/ReadMeterAI/issues"
+  },
+  "homepage": "https://github.com/IagoGA-Dev/ReadMeterAI#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
