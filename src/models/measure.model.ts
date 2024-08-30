@@ -8,6 +8,7 @@ const MeasureSchema = new Schema({
     measure_value: { type: Number, required: true },
     image_url: { type: String, required: true },
     measure_uuid: { type: String, required: true },
+    has_confirmed: { type: Boolean, required: true, default: false }
 });
 
 const Measure = mongoose.model('Measure', MeasureSchema);

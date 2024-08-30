@@ -47,6 +47,7 @@ const saveMeasure = async (
     measure_value,
     image_url,
     measure_uuid,
+    has_confirmed: false,
   });
   await measure.save();
 };

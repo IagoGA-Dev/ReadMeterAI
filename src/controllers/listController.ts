@@ -5,6 +5,7 @@ interface MeasureList {
     measure_uuid: string;
     measure_datetime: Date;
     measure_type: string;
+    measure_value: number;
     has_confirmed: boolean;
     image_url: string;
 }
@@ -56,7 +57,8 @@ const getMeasureList = async (req: Request, res: Response) => {
             measure_uuid: measure.measure_uuid,
             measure_datetime: new Date(measure.measure_datetime),
             measure_type: measure.measure_type,
-            has_confirmed: true,
+            measure_value: measure.measure_value,
+            has_confirmed: measure.has_confirmed,
             image_url: measure.image_url
         });
     });
