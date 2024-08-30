@@ -2,12 +2,12 @@ import confirmMeasure from "../controllers/confirmController";
 import Router, { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
+const router = Router();
+
 const validateConfirm = [
   body("measure_uuid").isString().notEmpty(),
-  body("confirm_value").isBoolean().notEmpty()
+  body("confirm_value").isInt().notEmpty()
 ];
-
-const router = Router();
 
 router.patch("/", validateConfirm, (req: Request, res: Response) => {
   const errors = validationResult(req);
