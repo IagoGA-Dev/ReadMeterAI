@@ -4,39 +4,38 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import Measure from "../models/measure.model";
 import fs from "fs";
 
-// @desc Check for existing measures
+// @desc Check for existing measures in the current month
 const checkExistingMeasure = async (
   customer_code: string,
   measure_type: string,
-  measure_datetime: string,
+  measure_datetime: Date,
 ): Promise<boolean> => {
+
   const existingMeasure = await Measure.findOne({
     customer_code,
     measure_type,
-    measure_datetime,
+    measure_datetime: measure_datetime,
   });
+
   return !!existingMeasure;
-}
+};
 
 // @desc Save image to disk and serve it
 const saveAndServeImage = (
   image: string,
   measureUuid: string,
 ): string => {
-
   const imageBuffer = Buffer.from(image, "base64");
-
   const imagePath = `./public/images/${measureUuid}.png`;
   fs.writeFileSync(imagePath, imageBuffer);
-
   return `http://localhost:3000/images/${measureUuid}.png`;
-}
+};
 
 // @desc Save measure to database
 const saveMeasure = async (
   customer_code: string,
   measure_type: string,
-  measure_datetime: string,
+  measure_datetime: Date,
   measure_value: number,
   image_url: string,
   measure_uuid: string,
@@ -50,15 +49,13 @@ const saveMeasure = async (
     measure_uuid,
   });
   await measure.save();
-}
+};
 
 // @desc Send image to Gemini API
 const sendToGemini = async (
   image: string
 ): Promise<{ measure_value: number }> => {
-
   const apiKey = process.env.GEMINI_API_KEY || "";
-
   if (!apiKey) {
     throw new Error("API key not found");
   }
@@ -68,7 +65,7 @@ const sendToGemini = async (
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const prompt = "Read the meter and provide the value shown in the following JSON format: { value: <the predicted value> }. If the image is not clear, please return { value: 'unclear' }.\nExamples: { value: 1234 }, { value: 'unclear' }";
+  const prompt = "Read the meter and provide the value shown in the following JSON format: { \"value\": <the predicted value> }.\nIf the image is not clear, please return { \"value\": \"unclear\" }.";
 
   const imageBuffer = {
     inlineData: {
@@ -78,17 +75,16 @@ const sendToGemini = async (
   };
 
   const response = await model.generateContent([prompt, imageBuffer]);
-  const responseText = response.response.text();
+  const responseText = await response.response.text();
 
-  const measureValue = responseText.match(/value: (\d+)/)?.[1];
-  if (!measureValue || isNaN(Number(measureValue))) {
+  const measureValue = responseText.match(/"value":\s*"?(\d+)"?/);
+  if (!measureValue || isNaN(Number(measureValue[1]))) {
     throw new Error("Unable to extract measure value from Gemini response");
   }
 
   return {
-    measure_value: Number(measureValue),
+    measure_value: Number(measureValue[1]),
   };
-
 };
 
 // @desc Uploads a file to the server
@@ -96,11 +92,12 @@ const sendToGemini = async (
 export const uploadFile = async (req: Request, res: Response) => {
   try {
     const { image, customer_code, measure_datetime, measure_type } = req.body;
+    const measureDate = new Date(measure_datetime);
 
     const existingMeasure = await checkExistingMeasure(
       customer_code,
       measure_type,
-      measure_datetime,
+      measureDate,
     );
     if (existingMeasure) {
       return res.status(409).json({
@@ -117,7 +114,7 @@ export const uploadFile = async (req: Request, res: Response) => {
     await saveMeasure(
       customer_code,
       measure_type,
-      measure_datetime,
+      measureDate,
       geminiResponse.measure_value,
       imageUrl,
       measureUuid,
