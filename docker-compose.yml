@@ -19,6 +19,8 @@ services:
       MONGO_URI: mongodb://db:27017
       DB_NAME: test_db
       NAME: root
+      HOST: 127.0.0.1
+      PORT: 3000
 
   db:
     image: mongo:latest

@@ -4,17 +4,26 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import Measure from "../models/measure.model";
 import fs from "fs";
 
-// @desc Check for existing measures in the current month
+// @desc Check for existing measures in the given month
 const checkExistingMeasure = async (
   customer_code: string,
   measure_type: string,
   measure_datetime: Date,
 ): Promise<boolean> => {
 
-  const existingMeasure = await Measure.findOne({
+  const givenDate = new Date(measure_datetime);
+
+  const startOfMonthUTC = new Date(Date.UTC(givenDate.getUTCFullYear(), givenDate.getUTCMonth(), 1));
+  const endOfMonthUTC = new Date(Date.UTC(givenDate.getUTCFullYear(), givenDate.getUTCMonth() + 1, 1));
+
+  const measures = await Measure.find({
     customer_code,
     measure_type,
-    measure_datetime: measure_datetime,
+  });
+
+  const existingMeasure = measures.find(measure => {
+    const measureDate = new Date(measure.measure_datetime);
+    return measureDate >= startOfMonthUTC && measureDate <= endOfMonthUTC;
   });
 
   return !!existingMeasure;
@@ -28,7 +37,7 @@ const saveAndServeImage = (
   const imageBuffer = Buffer.from(image, "base64");
   const imagePath = `./public/images/${measureUuid}.png`;
   fs.writeFileSync(imagePath, imageBuffer);
-  return `http://localhost:3000/images/${measureUuid}.png`;
+  return `http://${process.env.HOST}:${process.env.PORT}/images/${measureUuid}.png`;
 };
 
 // @desc Save measure to database
@@ -92,7 +101,9 @@ const sendToGemini = async (
 // @route POST /api/upload
 export const uploadFile = async (req: Request, res: Response) => {
   try {
-    const { image, customer_code, measure_datetime, measure_type } = req.body;
+    const { image, customer_code, measure_datetime } = req.body;
+    const measure_type = req.body.measure_type.toUpperCase();
+
     const measureDate = new Date(measure_datetime);
 
     const existingMeasure = await checkExistingMeasure(

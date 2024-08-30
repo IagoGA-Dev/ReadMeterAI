@@ -9,7 +9,7 @@ const validateUpload = [
   body("image").isBase64().notEmpty(),
   body("customer_code").isString().notEmpty(),
   body("measure_datetime").isISO8601(),
-  body("measure_type").isIn(["WATER", "GAS"]),
+  body("measure_type").toUpperCase().isIn(["WATER", "GAS"]),
 ];
 
 router.post("/", validateUpload, (req: Request, res: Response) => {
