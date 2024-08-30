@@ -35,7 +35,7 @@ const getMeasureList = async (req: Request, res: Response) => {
             query.measure_type = measureTypeUpper;
         } else {
             res.status(400).json({
-                error_code: "INVALID_MEASURE_TYPE",
+                error_code: "INVALID_TYPE",
                 error_description: "Tipo de medida inválido. Deve ser 'WATER' ou 'GAS'."
             });
             return;

@@ -26,11 +26,7 @@ const confirmMeasure = async (req: Request, res: Response) => {
     await measure.save();
 
     res.status(200).json({
-        measure_uuid: measure.measure_uuid,
-        measure_datetime: new Date(measure.measure_datetime),
-        measure_type: measure.measure_type,
-        has_confirmed: measure.has_confirmed,
-        image_url: measure.image_url
+        success: true
     });
 }
 
