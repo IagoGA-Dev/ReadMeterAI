@@ -13,3 +13,19 @@ services:
     ports:
       - '3000:3000'
     command: npm run dev
+    depends_on:
+      - db
+    environment:
+      MONGO_URI: mongodb://db:27017
+      DB_NAME: test_db
+      NAME: root
+
+  db:
+    image: mongo:latest
+    container_name: db
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test_db
